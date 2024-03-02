@@ -79,25 +79,58 @@ def display_enhanced_image(image_path):
         print(f"Failed to load image {image_path}.")
         return
 
-    # Create a resizable window
-    cv2.namedWindow('Enhanced Image', cv2.WINDOW_NORMAL)
+
+def display_comparison(original_dir, enhanced_dir, filename):
     
-    # Display the image in the window
-    cv2.imshow('Enhanced Image', img)
+    """
+    Display a side-by-side comparison of the original and enhanced image.
     
+    Parameters:
+    - original_dir: Directory containing the original images.
+    - enhanced_dir: Directory containing the enhanced images.
+    - filename: The filename of the image to compare.
+    """
+    original_image_path = os.path.join(original_dir, filename)
+    enhanced_image_path = os.path.join(enhanced_dir, 'enhanced_' + filename)
+
+    # Load both images
+    original_img = cv2.imread(original_image_path)
+    enhanced_img = cv2.imread(enhanced_image_path)
+
+    if original_img is None or enhanced_img is None:
+        print(f"Failed to load one of the images: {original_image_path} or {enhanced_image_path}")
+        return
+
+    # Resize images to the same height if necessary for a better comparison
+    if original_img.shape[0] != enhanced_img.shape[0]:
+        height = min(original_img.shape[0], enhanced_img.shape[0])
+        original_img = cv2.resize(original_img, (int(original_img.shape[1] * height / original_img.shape[0]), height))
+        enhanced_img = cv2.resize(enhanced_img, (int(enhanced_img.shape[1] * height / enhanced_img.shape[0]), height))
+
+    # Concatenate images horizontally (side by side)
+    comparison_img = cv2.hconcat([original_img, enhanced_img])
+
+    # Create a resizable window to display the comparison image
+    cv2.namedWindow('Comparison', cv2.WINDOW_NORMAL)
+
+    # Display the comparison image
+    cv2.imshow('Comparison', comparison_img)
+
     # Wait for any key to be pressed
     cv2.waitKey(0)
-    
+
     # Close all OpenCV windows
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
+    # Assuming the other parts of the script remain unchanged
     url = 'https://www.loc.gov/collections/world-war-i-and-1920-election-recordings/'
     base_dir = r'C:\Users\MSTAM\OneDrive\Documents\GitHub\opencv\7'
     download_images(url)
     enhance_images(os.path.join(base_dir, 'images'))
-
-    # Display the first enhanced image as an example
     enhanced_dir = os.path.join(base_dir, 'enhanced')
-    first_image_path = os.listdir(enhanced_dir)[0]  # Get the first image in the enhanced directory
-    display_enhanced_image(os.path.join(enhanced_dir, first_image_path))    
+
+    original_images_dir = os.path.join(base_dir, 'images')
+    enhanced_images_dir = os.path.join(base_dir, 'enhanced')
+    # Display a side-by-side comparison of image_4.jpg and its enhanced version
+    display_comparison(original_images_dir, enhanced_images_dir, 'image_4.jpg')
